@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ====================================================================================
+  pom.xml —— Maven 项目的"身份证 + 购物清单"
+  ====================================================================================
+  作用：Maven 用这个文件知道三件事：
+    1) 这个项目叫什么（坐标：groupId + artifactId + version）
+    2) 这个项目要"买"哪些第三方库（dependencies）
+    3) 这个项目要怎么打包（build/plugins）
+
+  阅读顺序建议（新手重点看）：
+    <parent>      → 继承 Spring Boot 父工程，省去大量版本管理
+    <properties>  → 统一管理版本号，方便升级时只改一处
+    <dependencies>→ 项目用到的所有第三方库，每一行都加了中文注释说明用途
+    <build>       → 打包配置
+  ====================================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      <parent>：继承一个父 POM。
+      Spring Boot 提供了一个"全家桶父工程"，继承后：
+        - 所有 Spring Boot 相关依赖的版本号都由它统一管理（你不用写 <version>）
+        - 默认的 Java 编译配置、资源过滤、插件配置都已就绪
+      relativePath=空表示从仓库下载，不在本地路径找。
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.5</version>
+        <relativePath/>
+    </parent>
+
+    <!-- 三元组：项目的"全球唯一坐标"，别人引用你时就靠这个 -->
+    <groupId>com.example</groupId>            <!-- 公司/组织域名反写 -->
+    <artifactId>test1</artifactId>            <!-- 项目名 -->
+    <version>0.0.1-SNAPSHOT</version>         <!-- SNAPSHOT=开发中版本 -->
+    <name>test1</name>
+    <description>Spring Boot 接口服务示例项目（分层架构 + 设计模式）</description>
+
+    <!--
+      <properties>：变量定义区。
+      把版本号、编码等提取到这里，好处：
+        1) 升级时只改这一处，所有引用自动生效；
+        2) <java.version> 是 Spring Boot 父 POM 预留的"开关变量"，改它就能改编译目标 JDK。
+    -->
+    <properties>
+        <java.version>17</java.version>                       <!-- Spring Boot 3 要求 JDK 17+ -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <springdoc.version>2.3.0</springdoc.version>         <!-- OpenAPI 文档库版本 -->
+    </properties>
+
+    <!--
+      <dependencies>：依赖清单。每个 <dependency> 对应一个第三方 jar。
+      习惯分组：核心 → 工具 → 测试。注释里写明"为什么需要它"。
+    -->
+    <dependencies>
+
+        <!--
+          ① Web 启动器：项目最核心的依赖。
+          它一个就把以下东西全拉进来了：
+            - Spring MVC（处理 HTTP 请求的框架）
+            - 内嵌 Tomcat（直接 run，不用部署到外部容器）
+            - Jackson（JSON 序列化）
+          所以你看到 @RestController / @GetMapping 能用，都是它带来的。
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--
+          ② 校验启动器：让 @NotBlank / @Valid / @Pattern 等注解生效。
+          没有它，DTO 上写的校验注解只是"摆设"，不会被触发。
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!--
+          ③ AOP 启动器：支持 @Aspect 切面编程。
+          我们用它实现"接口日志自动打印"——不侵入业务代码就能统一加日志。
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!--
+          ④ Lombok：用注解生成 getter/setter/构造器等模板代码。
+          @Data → 自动生成 getter/setter/toString/equals/hashCode
+          @RequiredArgsConstructor → 为 final 字段生成构造器（用于依赖注入）
+          注意 <optional>true</optional> 表示不传递给依赖本项目的项目。
+        -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!--
+          ⑤ OpenAPI 文档：自动生成接口文档 + Swagger UI 可视化页面。
+          访问 http://localhost:8080/swagger-ui.html 就能看到所有接口列表。
+          @Tag / @Operation / @Schema 注解就是给它用的。
+        -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <!--
+          ⑥ 测试支持：JUnit 5 + Spring Test 等。scope=test 表示只在测试时用。
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!--
+      <build>：打包相关配置。
+      spring-boot-maven-plugin 的作用：把项目打成"可执行 jar"，
+      也就是 java -jar xxx.jar 就能直接启动（含内嵌 Tomcat）。
+      <excludes> 排除 Lombok：它只在编译期起作用，运行时不需要。
+    -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

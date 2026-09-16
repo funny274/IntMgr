@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ====================================================================================
+  logback-spring.xml —— 日志输出配置（Spring Boot 自带 logback，文件名固定）
+  ====================================================================================
+  Spring Boot 启动时自动找 classpath 下的 logback-spring.xml 加载。
+  -spring 后缀（而非 logback.xml）让 Spring 能用 <springProfile> 等扩展标签。
+  ====================================================================================
+-->
+<configuration>
+    <!-- 引入 Spring Boot 默认配置（含彩色控制台输出等），省去重复定义 -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- 变量定义：后续用 ${LOG_PATH} 引用，方便统一改 -->
+    <property name="LOG_PATH" value="logs"/>
+    <property name="APP_NAME" value="test1"/>
+    <property name="FILE_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{40} - %msg%n"/>
+
+    <!-- 控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>  <!-- 来自前面 include -->
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!--
+      滚动文件输出：按时间+大小切分，避免单文件过大。
+      SizeAndTimeBasedRollingPolicy：到 50MB 或跨天就切一个新文件；
+      maxHistory：保留 14 天；totalSizeCap：总大小超 2GB 删最老的。
+    -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>14</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 根 logger：INFO 级别，同时输出到控制台和文件 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

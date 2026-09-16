@@ -1,0 +1,41 @@
+# ====================================================================================
+# application.yml —— 主配置文件（Spring Boot 启动时自动加载）
+# ====================================================================================
+# 配置文件分层：
+#   application.yml         ← 公共配置（所有环境都用）
+#   application-dev.yml    ← 开发环境覆盖（spring.profiles.active=dev 时激活）
+#   application-prod.yml   ← 生产环境覆盖（可按需新建）
+# 同名配置后者覆盖前者，方便环境差异化。
+# ====================================================================================
+
+server:
+  port: 8080                          # 内嵌 Tomcat 监听端口
+  servlet:
+    context-path: /                   # 应用上下文路径，/ 表示根路径
+
+spring:
+  application:
+    name: test1                       # 应用名，会出现在日志/监控指标里
+  profiles:
+    active: dev                       # 激活的 profile，对应 application-dev.yml
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss  # 全局日期格式化
+    time-zone: GMT+8                  # 时区
+    default-property-inclusion: non_null  # 序列化时忽略 null 字段，省带宽
+
+# Springdoc OpenAPI 配置（接口文档）
+springdoc:
+  api-docs:
+    path: /v3/api-docs                 # API 描述 JSON 的访问路径
+  swagger-ui:
+    path: /swagger-ui.html            # Swagger UI 页面路径
+    tags-sorter: alpha                # 分组按字母排序
+    operations-sorter: method         # 接口按 HTTP 方法排序
+  packages-to-scan: com.example.test1.controller  # 只扫描 controller 包生成文档
+  default-flat-param-object: true     # query 参数对象扁平化
+
+# 应用自定义配置（可在代码里 @ConfigurationProperties 或 @Value 读取）
+app:
+  demo:
+    name: test1-service
+    version: 1.0.0
