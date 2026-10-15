@@ -19,9 +19,38 @@ spring:
   profiles:
     active: dev                       # 激活的 profile，对应 application-dev.yml
   jackson:
-    date-format: yyyy-MM-dd HH:mm:ss  # 全局日期格式化
+    date-format: yyyy-MM-dd HH:mm:ss  # 全局日期格式化（LocalDateTime 也会按此格式输出）
     time-zone: GMT+8                  # 时区
     default-property-inclusion: non_null  # 序列化时忽略 null 字段，省带宽
+
+  # ==================== 数据源（Oracle） ====================
+  # 生产环境请把账号密码放到 application-prod.yml 并用环境变量注入，勿写死在公共配置里提交。
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver        # Oracle 驱动类
+    # Service Name 写法（推荐）：jdbc:oracle:thin:@//主机:端口/服务名
+    # SID 写法（老库常见）：jdbc:oracle:thin:@主机:端口:SID
+    url: jdbc:oracle:thin:@//localhost:1521/ORCLPDB1
+    username: SCOTT                                    # 演示用，实际按期环境改
+    password: tiger                                    # 演示用，实际按期环境改
+    hikari:                                            # 默认连接池 HikariCP（Spring Boot 自带，高并发首选）
+      maximum-pool-size: 10                            # 最大连接数，按并发量调
+      minimum-idle: 2                                  # 最小空闲连接
+      connection-timeout: 30000                        # 获取连接超时(ms)
+      idle-timeout: 600000                             # 空闲连接超时(ms)
+      pool-name: IntMgrHikariPool
+
+# ==================== MyBatis-Plus 配置 ====================
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true                 # 下划线列名<->驼峰字段自动映射（如 NICK_NAME->nickName）
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl  # SQL 日志走 logback（配合 dev 里 mapper 包 DEBUG 级别）
+  global-config:
+    banner: false                                      # 关闭启动时的 MP logo，日志更干净
+    db-config:
+      id-type: assign_id                               # 主键用雪花算法自动生成（分布式友好，不需 Oracle 自增）
+      logic-delete-field: deleted                      # 全局逻辑删除字段名
+      logic-delete-value: 1                            # 已删除 = 1
+      logic-not-delete-value: 0                        # 未删除 = 0
 
 # Springdoc OpenAPI 配置（接口文档）
 springdoc:

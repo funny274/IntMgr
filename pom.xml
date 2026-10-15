@@ -30,7 +30,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>3.5.16</version>
         <relativePath/>
     </parent>
 
@@ -51,6 +51,8 @@
         <java.version>17</java.version>                       <!-- Spring Boot 3 要求 JDK 17+ -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <springdoc.version>2.3.0</springdoc.version>         <!-- OpenAPI 文档库版本 -->
+        <mybatis-plus.version>3.5.7</mybatis-plus.version>   <!-- 持久层框架 MyBatis-Plus（3.5.7 分页插件仍在核心包内） -->
+        <oracle.version>21.9.0.0</oracle.version>            <!-- Oracle JDBC 驱动，可按 DBA 提供的版本调整 -->
     </properties>
 
     <!--
@@ -120,6 +122,35 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <!--
+          ⑦ MyBatis-Plus（Spring Boot 3 专用启动器）：持久层框架。
+          它是 MyBatis 的增强版，内置：
+            - BaseMapper 通用 CRUD（不用手写 SQL 就能增删改查）
+            - 分页插件 PaginationInnerInterceptor
+            - 条件构造器 LambdaQueryWrapper（类型安全的动态查询）
+            - 逻辑删除、自动填充等企业常用能力
+          注意 artifactId 带 spring-boot3；旧项目用的是 mybatis-plus-boot-starter（那是 SB2 时代）。
+          本工程固定 3.5.7：该版本分页插件仍在核心包内，3.5.9+ 拆到了独立 jsqlparser 依赖，新手容易踩坑。
+        -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <version>${mybatis-plus.version}</version>
+        </dependency>
+
+        <!--
+          ⑧ Oracle JDBC 驱动：连接 Oracle 数据库的"翻译官"。
+          ojdbc11 兼容 JDK 11/17，本工程用 JDK 17 正好匹配。
+          scope=runtime：编译期用不到驱动类，运行时才加载。
+          注意：各企业 Oracle 版本不一，版本号按你们 DBA 提供的改（也可用 ojdbc8/ojdbc17）。
+        -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <version>${oracle.version}</version>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 

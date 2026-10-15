@@ -9,4 +9,5 @@ logging:
   level:
     root: INFO                        # 根日志级别
     com.example.test1: DEBUG          # 项目代码打 DEBUG，方便排查
+    com.example.test1.mapper: DEBUG   # 打印 MyBatis-Plus 执行的 SQL 及参数
     org.springframework.web: INFO     # Spring Web 框架日志
